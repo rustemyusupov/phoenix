@@ -26,7 +26,7 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :junit_formatter,
-  report_dir: "./_build/test/lib/api"
+  report_dir: "./cover"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
