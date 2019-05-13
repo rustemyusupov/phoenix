@@ -24,8 +24,8 @@ jobs:  # basic units of work in a run
       - checkout  # check out source code to working directory
 
       - run: 
-        name: Install Hex and Rebar (without prompt)
-        command: mix local.hex --force && mix local.rebar --force
+          name: Install Hex and Rebar (without prompt)
+          command: mix local.hex --force && mix local.rebar --force
 
       - restore_cache:  # restores saved mix cache
       # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
@@ -38,8 +38,8 @@ jobs:  # basic units of work in a run
             - v1-build-cache-{{ .Branch }}
             - v1-build-cache
       - run: 
-        name: Install dependencies and compile them
-        command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
+          name: Install dependencies and compile them
+          command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
       - save_cache:  # generate and store mix cache
           key: v1-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
           paths: "deps"
@@ -68,8 +68,8 @@ jobs:  # basic units of work in a run
             echo Failed waiting for Postgres && exit 1
 
       - run: 
-        name: Run tests
-        command: cd app && mix test  # run all tests in project
+          name: Run tests
+          command: cd app && mix test  # run all tests in project
 
       - store_test_results:  # upload junit test results for display in Test Summary
           # Read more: https://circleci.com/docs/2.0/collect-test-data/
