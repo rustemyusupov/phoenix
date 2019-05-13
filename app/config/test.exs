@@ -13,7 +13,7 @@ config :logger, level: :warn
 config :api, Api.Repo,
   username: System.get_env("PGUSER"),
   password: System.get_env("PGPASSWORD"),
-  database: System.get_env("PGDATABASE"),
+  database: "api_test",
   hostname: System.get_env("PGHOST"),
   port: System.get_env("PGPORT") |> String.to_integer,
   pool: Ecto.Adapters.SQL.Sandbox

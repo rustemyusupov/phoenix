@@ -26,3 +26,6 @@ migrate:
 
 logs:
 	@docker-compose ${project} logs --tail=20 -f phoenix
+
+test:
+	@make exec cmd="mix test --cover"
