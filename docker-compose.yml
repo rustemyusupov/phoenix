@@ -1,0 +1,45 @@
+version: '3'
+
+# Containers we are going to run
+services:
+  # Our Phoenix container
+  phoenix:
+    # The build parameters for this container.
+    build:
+      # Here we define that it should build from the current directory
+      context: .
+    environment:
+      # Variables to connect to our Postgres server
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: phoenix
+      PGPORT: 5432
+      # Hostname of our Postgres container
+      PGHOST: db
+      # Auth0 variables
+      # AUTH0_DOMAIN: dev-rustem-local.auth0.com
+      # AUTH0_CLIENT_ID: sgjQMbcUiV4a4m4Y1jcpaGApw9RqhbqT
+      # AUTH0_CLIENT_SECRET: xB6hM2BtbrUENaaEJIY2VgnalWZ216pMEAJKzmoTLQ73d47_baBzepmj5q5NxkFX
+    volumes:
+      - ./app:/app:cached
+    ports:
+      # Mapping the port to make the Phoenix app accessible outside of the container
+      - "4000:4000"
+    depends_on:
+      # The db container needs to be started before we start this container
+      - db
+    command: mix phx.server
+  db:
+    # We use the predefined Postgres image
+    image: postgres:alpine
+    environment:
+      # Set user/password for Postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # Set a path where Postgres should store the data
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data:cached
+    ports:
+      # Mapping the port to make the Phoenix app accessible outside of the container
+      - "5433:5432"
