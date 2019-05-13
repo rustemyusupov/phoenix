@@ -53,9 +53,9 @@ jobs:  # basic units of work in a run
           key: v1-build-cache
           paths: "_build"
 
-      # - run:  # special utility that stalls main process until DB is ready
-      #     name: Wait for DB
-      #     command: dockerize -wait tcp://localhost:5432 -timeout 1m
+      - run:  # special utility that stalls main process until DB is ready
+          name: Wait for DB
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
 
       - run: cd app && mix test  # run all tests in project
 
