@@ -11,8 +11,9 @@ config :logger, level: :warn
 
 # Configure your database
 config :api, Api.Repo,
-  username: "postgres",
-  password: "postgres",
-  database: "api_test",
-  hostname: "db",
+  username: System.get_env("PGUSER"),
+  password: System.get_env("PGPASSWORD"),
+  database: System.get_env("PGDATABASE"),
+  hostname: System.get_env("PGHOST"),
+  port: System.get_env("PGPORT") |> String.to_integer,
   pool: Ecto.Adapters.SQL.Sandbox
