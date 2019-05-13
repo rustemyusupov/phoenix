@@ -3,7 +3,7 @@ jobs:  # basic units of work in a run
   build:  # runs not using Workflows must have a `build` job as entry point
     parallelism: 1  # run only one instance of this job in parallel
     docker:  # run the steps with Docker
-      - image: circleci/elixir  # ...with this image as the primary container; this is where all `steps` will run
+      - image: elixir:alpine  # ...with this image as the primary container; this is where all `steps` will run
         environment:  # environment variables for primary container
           MIX_ENV: test
           PGUSER: postgres
@@ -12,7 +12,7 @@ jobs:  # basic units of work in a run
           PGPORT: 5432
           # Hostname of our Postgres container
           PGHOST: localhost
-      - image: circleci/postgres  # database image
+      - image: postgres:alpine  # database image
         environment:  # environment variables for database
           POSTGRES_USER: postgres
           POSTGRES_DB: api_test
@@ -54,8 +54,15 @@ jobs:  # basic units of work in a run
           paths: "_build"
 
       - run:  # special utility that stalls main process until DB is ready
-          name: Wait for DB
-          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+          name: Waiting for Postgres to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 5432 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for Postgres && exit 1
 
       - run: cd app && mix test  # run all tests in project
 
