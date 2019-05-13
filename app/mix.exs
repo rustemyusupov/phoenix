@@ -41,7 +41,8 @@ defmodule Api.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:faker_elixir_octopus, "~> 1.0.0",  only: [:dev, :test]}
+      {:faker_elixir_octopus, "~> 1.0.0",  only: [:dev, :test]},
+      {:junit_formatter, "~> 3.0", only: [:test]}
     ]
   end
 

@@ -73,4 +73,4 @@ jobs:  # basic units of work in a run
 
       - store_test_results:  # upload junit test results for display in Test Summary
           # Read more: https://circleci.com/docs/2.0/collect-test-data/
-          path: ./app/cover # Replace with the name of your :app
+          path: ./app/_build/test/lib/api # Replace with the name of your :app
