@@ -76,7 +76,12 @@ jobs:  # basic units of work in a run
           paths:
             - /usr/local/bin/dockerize
       - save_cache:
-          key: v1-plt-cache-{{ checksum ".app/mix.lock" }}
+          key: v1-plt-cache-{{ checksum "./app/mix.lock" }}
+          paths:
+            - ./app/_build
+            - ~/.mix
+      - save_cache:
+          key: v1-plt-cache
           paths:
             - ./app/_build
             - ~/.mix
