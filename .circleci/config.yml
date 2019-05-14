@@ -20,44 +20,40 @@ defaults: &defaults
     DOCKERIZE_VERSION: v0.6.1
   working_directory: ~/app  # directory where steps will run
 
-
-
-
-
 jobs:  # basic units of work in a run
   build:
-  <<: *defaults
-  steps:
-    - checkout  # check out source code to working directory
+    <<: *defaults
+    steps:
+      - checkout  # check out source code to working directory
 
-    - restore_cache:
-        keys:
-          - v1-deps-cache-{{ checksum "mix.lock" }}
-          - v1-deps-cache
-    - run: mix local.hex --force
-    - run: mix local.rebar --force
-    - run: mix deps.get
-    - run: mix deps.compile
-    - run: mix compile
-    - save_cache:
-        key: v1-deps-cache-{{ checksum "mix.lock" }}
-        paths:
-          - _build
-          - deps
-          - ~/.mix
-    - persist_to_workspace:
-        root: ~/
-        paths:
-          - app
-          - .mix
+      - restore_cache:
+          keys:
+            - v1-deps-cache-{{ checksum "mix.lock" }}
+            - v1-deps-cache
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix deps.get
+      - run: mix deps.compile
+      - run: mix compile
+      - save_cache:
+          key: v1-deps-cache-{{ checksum "mix.lock" }}
+          paths:
+            - _build
+            - deps
+            - ~/.mix
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - app
+            - .mix
   test:
-      <<: *defaults
-      steps:
-        - attach_workspace:
-            at: ~/app
-        - run:
-            name: Run tests
-            command: mix test
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/app
+      - run:
+          name: Run tests
+          command: mix test
   credo:
     <<: *defaults
     steps:
@@ -101,7 +97,6 @@ jobs:  # basic units of work in a run
       - run:
           name: Analyze coverage
           command: mix coveralls.circle
-
 workflows:
   version: 2
   continuous_integration:
