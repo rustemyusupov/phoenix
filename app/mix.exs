@@ -50,7 +50,7 @@ defmodule Api.MixProject do
       {:junit_formatter, "~> 3.0", only: [:test]},
       {:excoveralls, "~> 0.10", only: :test},
       {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev, :test], runtime: false},
       {:pre_commit, "~> 0.3.4", only: :dev}
     ]
   end
