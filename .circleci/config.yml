@@ -38,8 +38,8 @@ jobs:  # basic units of work in a run
           keys:
             - v1-build-cache-{{ .Branch }}
             - v1-build-cache
-      # - restore_cache:
-      #     key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
+      - restore_cache:
+          key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
       - run:
           name: Install Dockerize if not found in cache
           command:
@@ -67,10 +67,10 @@ jobs:  # basic units of work in a run
       - save_cache: # and one more build cache for good measure
           key: v1-build-cache
           paths: "_build"
-      # - save_cache:
-      #     key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
-      #     paths:
-      #       - /usr/local/bin/dockerize
+      - save_cache:
+          key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
+          paths:
+            - /usr/local/bin/dockerize
       - run:  # special utility that stalls main process until DB is ready
           name: Waiting for Postgres to be ready
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
