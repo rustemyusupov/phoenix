@@ -1,190 +1,101 @@
 version: 2  # use CircleCI 2.0 instead of CircleCI Classic
-defaults: &defaults
-  docker:  # run the steps with Docker
-    - image: elixir:alpine  # ...with this image as the primary container; this is where all `steps` will run
-      environment:  # environment variables for primary container
-        MIX_ENV: test
-        PGUSER: postgres
-        PGPASSWORD: postgres
-        PGDATABASE: api_test
-        PGPORT: 5432
-        # Hostname of our Postgres container
-        PGHOST: localhost
-    - image: postgres:alpine  # database image
-      environment:  # environment variables for database
-        POSTGRES_USER: postgres
-        POSTGRES_DB: api_test
-        POSTGRES_PASSWORD:
-
-  environment:
-    DOCKERIZE_VERSION: v0.6.1
-  working_directory: ~/  # directory where steps will run
-
 jobs:  # basic units of work in a run
-  build:
-    <<: *defaults
-    steps:
+  build:  # runs not using Workflows must have a `build` job as entry point
+    parallelism: 1  # run only one instance of this job in parallel
+    docker:  # run the steps with Docker
+      - image: elixir:alpine  # ...with this image as the primary container; this is where all `steps` will run
+        environment:  # environment variables for primary container
+          MIX_ENV: test
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: api_test
+          PGPORT: 5432
+          # Hostname of our Postgres container
+          PGHOST: localhost
+      - image: postgres:alpine  # database image
+        environment:  # environment variables for database
+          POSTGRES_USER: postgres
+          POSTGRES_DB: api_test
+          POSTGRES_PASSWORD:
+
+    environment:
+      DOCKERIZE_VERSION: v0.6.1
+    working_directory: ~/app  # directory where steps will run
+
+    steps:  # commands that comprise the `build` job
       - checkout  # check out source code to working directory
+      - run:
+          name: Install Hex and Rebar (without prompt)
+          command: mix local.hex --force && mix local.rebar --force
 
+      - restore_cache:  # restores saved mix cache
+      # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+          keys:  # list of cache keys, in decreasing specificity
+            - v1-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
+            - v1-mix-cache-{{ .Branch }}
+            - v1-mix-cache
+      - restore_cache:  # restores saved build cache
+          keys:
+            - v1-build-cache-{{ .Branch }}
+            - v1-build-cache
+      - restore_cache:
+          key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
       - restore_cache:
           keys:
-            - v1-deps-cache-{{ checksum "./app/mix.lock" }}
-            - v1-deps-cache
-      - run: mix local.hex --force
-      - run: mix local.rebar --force
-      - run: cd app && mix deps.get
-      - run: cd app && mix deps.compile
-      - run: cd app && mix compile
-      - save_cache:
-          key: v1-deps-cache-{{ checksum "./app/mix.lock" }}
-          paths:
-            - ./app/_build
-            - ./app/deps
-            - ~/.mix
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - app
-            - .mix
-  test:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/app
-      - run:
-          name: Run tests
-          command: mix test
-  credo:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Run credo
-          command: mix credo
-
-  check_formatted:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Verify formatted
-          command: mix format --check-formatted
-  dialyzer:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - restore_cache:
-          keys:
-            - v1-plt-cache-{{ checksum "mix.lock" }}
+            - v1-plt-cache-{{ checksum ".app/mix.lock" }}
             - v1-plt-cache
-      - run: mix dialyzer --plt
+      - run:
+          name: Install Dockerize if not found in cache
+          command:
+            if \[ -f /usr/local/bin/dockerize \]; then
+              echo "dockerize found; skipping installation";
+            else wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+              && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+              && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz;
+            fi
+      - run: 
+          name: Install dependencies and compile them
+          command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
+      - save_cache:  # generate and store mix cache
+          key: v1-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
+          paths: ".app/deps"
+      - save_cache:  # make another, less specific cache
+          key: v1-mix-cache-{{ .Branch }}
+          paths: ".app/deps"
+      - save_cache:  # you should really save one more cache (just in case)
+          key: v1-mix-cache
+          paths: ".app/deps"
+      - save_cache: # don't forget to save a *build* cache, too
+          key: v1-build-cache-{{ .Branch }}
+          paths: ".app/_build"
+      - save_cache: # and one more build cache for good measure
+          key: v1-build-cache
+          paths: ".app/_build"
       - save_cache:
-          key: v1-plt-cache-{{ checksum "mix.lock" }}
+          key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
           paths:
-            - _build
+            - /usr/local/bin/dockerize
+      - save_cache:
+          key: v1-plt-cache-{{ checksum ".app/mix.lock" }}
+          paths:
+            - .app/_build
             - ~/.mix
-      - run:
-          name: Run dialyzer
-          command: mix dialyzer
-  coverage:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Analyze coverage
-          command: mix coveralls.circle
-workflows:
-  version: 2
-  continuous_integration:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - test:
-          requires:
-            - build
-      - credo:
-          requires:
-            - build
-      - dialyzer:
-          requires:
-            - build
-      - coverage:
-          requires:
-            - build
+      - run:  # special utility that stalls main process until DB is ready
+          name: Run Credo
+          command: cd app && mix credo
+      - run: 
+          name: Run Dialyzer
+          command: cd app && mix dialyzer
+      - run:  # special utility that stalls main process until DB is ready
+          name: Waiting for Postgres to be ready
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+      - run: 
+          name: Run tests
+          command: cd app && mkdir cover && mix coveralls.circle # run all tests in project
 
-  # build:  # runs not using Workflows must have a `build` job as entry point
-  #   <<: *defaults
-  #   steps:  # commands that comprise the `build` job
-  #     - checkout  # check out source code to working directory
-  #     - run:
-  #         name: Install Hex and Rebar (without prompt)
-  #         command: mix local.hex --force && mix local.rebar --force
+      - store_test_results:  # upload junit test results for display in Test Summary
+          # Read more: https://circleci.com/docs/2.0/collect-test-data/
+          path: ./app/cover # Replace with the name of your :app
 
-  #     - restore_cache:  # restores saved mix cache
-  #     # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
-  #         keys:  # list of cache keys, in decreasing specificity
-  #           - v1-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
-  #           - v1-mix-cache-{{ .Branch }}
-  #           - v1-mix-cache
-  #     - restore_cache:  # restores saved build cache
-  #         keys:
-  #           - v1-build-cache-{{ .Branch }}
-  #           - v1-build-cache
-  #     - restore_cache:
-  #         key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
-  #     - run:
-  #         name: Install Dockerize if not found in cache
-  #         command:
-  #           if \[ -f /usr/local/bin/dockerize \]; then
-  #             echo "dockerize found; skipping installation";
-  #           else wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-  #             && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-  #             && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz;
-  #           fi
-  #     - run: 
-  #         name: Install dependencies and compile them
-  #         command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
-  #     - save_cache:  # generate and store mix cache
-  #         key: v1-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
-  #         paths: "deps"
-  #     - save_cache:  # make another, less specific cache
-  #         key: v1-mix-cache-{{ .Branch }}
-  #         paths: "deps"
-  #     - save_cache:  # you should really save one more cache (just in case)
-  #         key: v1-mix-cache
-  #         paths: "deps"
-  #     - save_cache: # don't forget to save a *build* cache, too
-  #         key: v1-build-cache-{{ .Branch }}
-  #         paths: "_build"
-  #     - save_cache: # and one more build cache for good measure
-  #         key: v1-build-cache
-  #         paths: "_build"
-  #     - save_cache:
-  #         key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
-  #         paths:
-  #           - /usr/local/bin/dockerize
-  #     - run:
-  #         name: Run Credo
-  #         command: cd app && mix credo
-  #     - run:
-  #         name: Run Dialyzer
-  #         command: cd app && mix dialyzer
-  #     - run:  # special utility that stalls main process until DB is ready
-  #         name: Waiting for Postgres to be ready
-  #         command: dockerize -wait tcp://localhost:5432 -timeout 1m
-  #     - run: 
-  #         name: Run tests
-  #         command: cd app && mkdir cover && mix coveralls.html # run all tests in project
-
-  #     - store_test_results:  # upload junit test results for display in Test Summary
-  #         # Read more: https://circleci.com/docs/2.0/collect-test-data/
-  #         path: ./app/cover # Replace with the name of your :app
-
-  #     - store_artifacts:
-  #         path: ./app/cover
+      - store_artifacts:
+          path: ./app/cover
