@@ -47,11 +47,13 @@ config :phoenix, :stacktrace_depth, 20
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
+config :pre_commit, commands: ["format"]
+
 # Configure your database
 config :api, Api.Repo,
   username: System.get_env("PGUSER"),
   password: System.get_env("PGPASSWORD"),
   database: System.get_env("PGDATABASE"),
   hostname: System.get_env("PGHOST"),
-  port: System.get_env("PGPORT") |> String.to_integer,
+  port: System.get_env("PGPORT") |> String.to_integer(),
   pool_size: 10

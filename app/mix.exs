@@ -10,7 +10,12 @@ defmodule Api.MixProject do
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      dialyzer: [plt_add_deps: :transitive],
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,      
+      ]
     ]
   end
 
@@ -41,8 +46,12 @@ defmodule Api.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:faker_elixir_octopus, "~> 1.0.0",  only: [:dev, :test]},
-      {:junit_formatter, "~> 3.0", only: [:test]}
+      {:faker_elixir_octopus, "~> 1.0.0", only: [:dev, :test]},
+      {:junit_formatter, "~> 3.0", only: [:test]},
+      {:excoveralls, "~> 0.10", only: :test},
+      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
+      {:pre_commit, "~> 0.3.4", only: :dev}
     ]
   end
 

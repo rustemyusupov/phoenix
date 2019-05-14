@@ -7,7 +7,11 @@ defmodule Api.EventsTest do
     alias Api.Events.Event
 
     @valid_attrs %{date: ~D[2010-04-17], description: "some description", title: "some title"}
-    @update_attrs %{date: ~D[2011-05-18], description: "some updated description", title: "some updated title"}
+    @update_attrs %{
+      date: ~D[2011-05-18],
+      description: "some updated description",
+      title: "some updated title"
+    }
     @invalid_attrs %{date: nil, description: nil, title: nil}
 
     def event_fixture(attrs \\ %{}) do

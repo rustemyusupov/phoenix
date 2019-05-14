@@ -9,6 +9,5 @@ defmodule Api.Repo.Migrations.CreateEvents do
 
       timestamps()
     end
-
   end
 end
