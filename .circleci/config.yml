@@ -32,9 +32,9 @@ jobs:  # basic units of work in a run
             - v1-deps-cache
       - run: mix local.hex --force
       - run: mix local.rebar --force
-      - run: mix deps.get
-      - run: mix deps.compile
-      - run: mix compile
+      - run: cd app && mix deps.get
+      - run: cd app && mix deps.compile
+      - run: cd app && mix compile
       - save_cache:
           key: v1-deps-cache-{{ checksum "mix.lock" }}
           paths:
@@ -42,7 +42,7 @@ jobs:  # basic units of work in a run
             - deps
             - ~/.mix
       - persist_to_workspace:
-          root: ~/app
+          root: ~/
           paths:
             - app
             - .mix
