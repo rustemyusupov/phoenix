@@ -5,6 +5,7 @@
     "minimum_coverage": 20
   },
   "skip_files": [
-    "test/*"
+    "test",
+    "test/support"
   ]
 }

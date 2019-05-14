@@ -12,10 +12,7 @@ defmodule Api.MixProject do
       aliases: aliases(),
       deps: deps(),
       dialyzer: [plt_add_deps: :transitive],
-      test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,      
-      ]
+      test_coverage: [tool: ExCoveralls]
     ]
   end
 
