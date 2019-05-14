@@ -42,7 +42,7 @@ jobs:  # basic units of work in a run
             - deps
             - ~/.mix
       - persist_to_workspace:
-          root: ~/
+          root: ~/app
           paths:
             - app
             - .mix
