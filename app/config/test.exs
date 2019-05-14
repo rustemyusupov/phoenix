@@ -9,6 +9,9 @@ config :api, ApiWeb.Endpoint,
 # Print only warnings and errors during test
 config :logger, level: :warn
 
+config :junit_formatter,
+  report_dir: "./cover"
+  
 # Configure your database
 config :api, Api.Repo,
   username: System.get_env("PGUSER"),

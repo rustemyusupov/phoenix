@@ -58,14 +58,7 @@ jobs:  # basic units of work in a run
 
       - run:  # special utility that stalls main process until DB is ready
           name: Waiting for Postgres to be ready
-          command: |
-            for i in `seq 1 10`;
-            do
-              nc -z localhost 5432 && echo Success && exit 0
-              echo -n .
-              sleep 1
-            done
-            echo Failed waiting for Postgres && exit 1
+          command: ./wait-for-it.sh localhost:5432 -- "Postgres is ready"
       - run: 
           name: Run tests
           command: cd app && mkdir cover && mix test --cover # run all tests in project

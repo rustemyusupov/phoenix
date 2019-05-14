@@ -28,7 +28,7 @@ services:
     depends_on:
       # The db container needs to be started before we start this container
       - db
-    command: mix phx.server
+    command: ["/usr/bin/wait-for-it.sh", "db:5432", "-t", "30",  "--", "mix", "phx.server"]
   db:
     # We use the predefined Postgres image
     image: postgres:alpine
