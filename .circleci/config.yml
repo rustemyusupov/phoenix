@@ -36,7 +36,7 @@ jobs:  # basic units of work in a run
       - run: cd app && mix deps.compile
       - run: cd app && mix compile
       - save_cache:
-          key: v1-deps-cache-{{ checksum "./appmix.lock" }}
+          key: v1-deps-cache-{{ checksum "./app/mix.lock" }}
           paths:
             - ./app/_build
             - ./app/deps
