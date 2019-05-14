@@ -28,7 +28,7 @@ jobs:  # basic units of work in a run
 
       - restore_cache:
           keys:
-            - v1-deps-cache-{{ checksum "mix.lock" }}
+            - v1-deps-cache-{{ checksum "./appmix.lock" }}
             - v1-deps-cache
       - run: mix local.hex --force
       - run: mix local.rebar --force
@@ -36,10 +36,10 @@ jobs:  # basic units of work in a run
       - run: cd app && mix deps.compile
       - run: cd app && mix compile
       - save_cache:
-          key: v1-deps-cache-{{ checksum "mix.lock" }}
+          key: v1-deps-cache-{{ checksum "./appmix.lock" }}
           paths:
-            - _build
-            - deps
+            - ./app/_build
+            - ./app/deps
             - ~/.mix
       - persist_to_workspace:
           root: ~/
