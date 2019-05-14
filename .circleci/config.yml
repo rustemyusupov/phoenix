@@ -55,7 +55,9 @@ jobs:  # basic units of work in a run
       - save_cache: # and one more build cache for good measure
           key: v1-build-cache
           paths: "_build"
-
+      - run:
+          name: Make wait script executable
+          command: chmod +x ./wait-for-it.sh
       - run:  # special utility that stalls main process until DB is ready
           name: Waiting for Postgres to be ready
           command: sh ./wait-for-it.sh localhost:5432 -- "Postgres is ready"
