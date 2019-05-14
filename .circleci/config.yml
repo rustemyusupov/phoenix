@@ -18,6 +18,8 @@ jobs:  # basic units of work in a run
           POSTGRES_DB: api_test
           POSTGRES_PASSWORD:
 
+    environment:
+      DOCKERIZE_VERSION: v0.6.0
     working_directory: ~/app  # directory where steps will run
 
     steps:  # commands that comprise the `build` job
@@ -38,8 +40,6 @@ jobs:  # basic units of work in a run
             - v1-build-cache
       - restore_cache:
           key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
       - run:
           name: install dockerize if not found in cache
           command:
@@ -49,8 +49,6 @@ jobs:  # basic units of work in a run
               && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
               && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz;
             fi
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
       - run: 
           name: Install dependencies and compile them
           command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
@@ -71,8 +69,6 @@ jobs:  # basic units of work in a run
           paths: "_build"
       - save_cache:
           key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
           paths:
             - /usr/local/bin/dockerize
       - run:  # special utility that stalls main process until DB is ready
