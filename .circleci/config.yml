@@ -21,9 +21,12 @@ jobs:  # basic units of work in a run
     working_directory: ~/app  # directory where steps will run
 
     steps:  # commands that comprise the `build` job
-      - shellcheck
       - checkout  # check out source code to working directory
-
+      - run:
+          name: Check Scripts
+          command: |
+            find . -type f -name '*.sh' | wc -l
+            find . -type f -name '*.sh' | xargs shellcheck --external-sources
       - run: 
           name: Install Hex and Rebar (without prompt)
           command: mix local.hex --force && mix local.rebar --force
