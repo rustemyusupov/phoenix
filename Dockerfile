@@ -6,18 +6,19 @@
 
 FROM elixir:alpine
 
-COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
+ENV DOCKERIZE_VERSION v0.6.1
 
 RUN set xe && \
-  apk add --no-cache postgresql-client inotify-tools bash && \
-  chmod +x /usr/local/bin/wait-for-it.sh && \
-  rm -rf /var/cache/apk/*
+  apk add --no-cache postgresql-client inotify-tools && \
+  rm -rf /var/cache/apk/* && \
+  wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && \
+  tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && \
+  rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 # Create app directory and copy the Elixir projects into it
 # RUN mkdir /app
 # COPY ./app /app
 WORKDIR /app
-
 
 # Install hex package manager and rebar (was required after test)
 RUN mix local.hex --force && mix local.rebar --force
