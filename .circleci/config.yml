@@ -42,7 +42,7 @@ jobs:  # basic units of work in a run
           key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
       - restore_cache:
           keys:
-            - v1-plt-cache-{{ checksum ".app/mix.lock" }}
+            - v1-plt-cache-{{ checksum "./app/mix.lock" }}
             - v1-plt-cache
       - run:
           name: Install Dockerize if not found in cache
@@ -58,19 +58,19 @@ jobs:  # basic units of work in a run
           command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
       - save_cache:  # generate and store mix cache
           key: v1-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
-          paths: ".app/deps"
+          paths: "./app/deps"
       - save_cache:  # make another, less specific cache
           key: v1-mix-cache-{{ .Branch }}
-          paths: ".app/deps"
+          paths: "./app/deps"
       - save_cache:  # you should really save one more cache (just in case)
           key: v1-mix-cache
-          paths: ".app/deps"
+          paths: "./app/deps"
       - save_cache: # don't forget to save a *build* cache, too
           key: v1-build-cache-{{ .Branch }}
-          paths: ".app/_build"
+          paths: "./app/_build"
       - save_cache: # and one more build cache for good measure
           key: v1-build-cache
-          paths: ".app/_build"
+          paths: "./app/_build"
       - save_cache:
           key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
           paths:
@@ -78,7 +78,7 @@ jobs:  # basic units of work in a run
       - save_cache:
           key: v1-plt-cache-{{ checksum ".app/mix.lock" }}
           paths:
-            - .app/_build
+            - ./app/_build
             - ~/.mix
       - run:  # special utility that stalls main process until DB is ready
           name: Run Credo
