@@ -28,7 +28,7 @@ jobs:  # basic units of work in a run
 
       - restore_cache:
           keys:
-            - v1-deps-cache-{{ checksum "./appmix.lock" }}
+            - v1-deps-cache-{{ checksum "./app/mix.lock" }}
             - v1-deps-cache
       - run: mix local.hex --force
       - run: mix local.rebar --force
