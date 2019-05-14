@@ -6,11 +6,11 @@
 
 FROM elixir:alpine
 
-COPY wait-for-it.sh /usr/bin/wait-for-it.sh
+COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
 
 RUN set xe && \
   apk add --no-cache postgresql-client inotify-tools bash && \
-  chmod +x /usr/bin/wait-for-it.sh && \
+  chmod +x /usr/local/bin/wait-for-it.sh && \
   rm -rf /var/cache/apk/*
 
 # Create app directory and copy the Elixir projects into it

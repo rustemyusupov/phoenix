@@ -23,11 +23,6 @@ jobs:  # basic units of work in a run
     steps:  # commands that comprise the `build` job
       - checkout  # check out source code to working directory
       - run:
-          name: Check Scripts
-          command: |
-            find . -type f -name '*.sh' | wc -l
-            find . -type f -name '*.sh' | xargs shellcheck --external-sources
-      - run: 
           name: Install Hex and Rebar (without prompt)
           command: mix local.hex --force && mix local.rebar --force
 
@@ -41,6 +36,19 @@ jobs:  # basic units of work in a run
           keys:
             - v1-build-cache-{{ .Branch }}
             - v1-build-cache
+      - restore_cache:
+          key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
+          environment:
+            DOCKERIZE_VERSION: v0.6.0
+      - run:
+          name: install dockerize if not found in cache
+          command:
+            if \[ -f /usr/local/bin/dockerize \]; then
+              echo "dockerize found; skipping installation";
+            else wget   https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+              && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+              && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz;
+            fi
       - run: 
           name: Install dependencies and compile them
           command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
@@ -59,9 +67,13 @@ jobs:  # basic units of work in a run
       - save_cache: # and one more build cache for good measure
           key: v1-build-cache
           paths: "_build"
+      - save_cache:
+          key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
+          paths:
+            - /usr/local/bin/dockerize
       - run:  # special utility that stalls main process until DB is ready
           name: Waiting for Postgres to be ready
-          command: sh ./wait-for-it.sh localhost:5432 -- "Postgres is ready"
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run: 
           name: Run tests
           command: cd app && mkdir cover && mix test --cover # run all tests in project
