@@ -74,6 +74,9 @@ jobs:  # basic units of work in a run
           name: Run Credo
           command: cd app && mix credo
       - run: 
+          name: Run Dialyzer PLT generation
+          command: cd app && mix dialyzer --plt
+      - run: 
           name: Run Dialyzer
           command: cd app && mix dialyzer
       - run:  # special utility that stalls main process until DB is ready
