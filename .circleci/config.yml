@@ -39,7 +39,6 @@ jobs:  # basic units of work in a run
             - v2-build-cache
       - restore_cache:
           key: v2-plt-cache-plt-{{ .Branch }}
-          key: v2-plt-cache-plt
       - restore_cache:
           key: dockerize-{{ arch }}-{{ .Environment.DOCKERIZE_VERSION }}
       - run:
@@ -71,9 +70,6 @@ jobs:  # basic units of work in a run
           paths: "./app/_build"
       - save_cache:
           key: v2-plt-cache-plt-{{ .Branch }}
-          paths: "./app/priv/plts"
-      - save_cache:
-          key: v2-plt-cache-plt
           paths: "./app/priv/plts"
       - save_cache:
           key: dockerize-{{ arch }}
