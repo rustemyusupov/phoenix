@@ -30,17 +30,15 @@ jobs:  # basic units of work in a run
       - restore_cache:  # restores saved mix cache
       # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
           keys:  # list of cache keys, in decreasing specificity
-            - v3-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
-            - v3-mix-cache-{{ .Branch }}
-            - v3-mix-cache
+            - v4-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
+            - v4-mix-cache-{{ .Branch }}
+            - v4-mix-cache
       - restore_cache:  # restores saved build cache
           keys:
-            - v3-build-cache-{{ .Branch }}
-            - v3-build-cache
+            - v4-build-cache-{{ .Branch }}
+            - v4-build-cache
       - restore_cache:
-          key: v3-plt-cache-plt-{{ .Branch }}
-      - restore_cache:
-          key: dockerize-{{ arch }}-{{ .Environment.DOCKERIZE_VERSION }}
+          key: dockerize-{{ arch }}
       - run:
           name: Install Dockerize if not found in cache
           command:
@@ -66,23 +64,20 @@ jobs:  # basic units of work in a run
           name: Run tests and generate coverage
           command: cd app && mkdir cover && mix test && mix coveralls.html # run all tests in project and generate coverage
       - save_cache:  # generate and store mix cache
-          key: v3-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
+          key: v4-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
           paths: "./app/deps"
       - save_cache:  # make another, less specific cache
-          key: v3-mix-cache-{{ .Branch }}
+          key: v4-mix-cache-{{ .Branch }}
           paths: "./app/deps"
       - save_cache:  # you should really save one more cache (just in case)
-          key: v3-mix-cache
+          key: v4-mix-cache
           paths: "./app/deps"
       - save_cache: # don't forget to save a *build* cache, too
-          key: v3-build-cache-{{ .Branch }}
+          key: v4-build-cache-{{ .Branch }}
           paths: "./app/_build"
       - save_cache: # and one more build cache for good measure
-          key: v3-build-cache
+          key: v4-build-cache
           paths: "./app/_build"
-      - save_cache:
-          key: v3-plt-cache-plt-{{ .Branch }}
-          paths: "./app/priv/plts"
       - save_cache:
           key: dockerize-{{ arch }}
           paths:
