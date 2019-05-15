@@ -20,6 +20,7 @@ jobs:  # basic units of work in a run
 
     environment:
       DOCKERIZE_VERSION: v0.6.1
+      CACHE_VERSION: 2
     working_directory: ~/app  # directory where steps will run
 
     steps:  # commands that comprise the `build` job
@@ -31,19 +32,19 @@ jobs:  # basic units of work in a run
       - restore_cache:  # restores saved mix cache
       # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
           keys:  # list of cache keys, in decreasing specificity
-            - v1-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
-            - v1-mix-cache-{{ .Branch }}
-            - v1-mix-cache
+            - $CACHE_VERSION-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
+            - $CACHE_VERSION-mix-cache-{{ .Branch }}
+            - $CACHE_VERSION-mix-cache
       - restore_cache:  # restores saved build cache
           keys:
-            - v1-build-cache-{{ .Branch }}
-            - v1-build-cache
+            - $CACHE_VERSION-build-cache-{{ .Branch }}
+            - $CACHE_VERSION-build-cache
       - restore_cache:
-          key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
+          key: dockerize-{{ arch }}-$DOCKERIZE_VERSION
       - restore_cache:
           keys:
-            - v1-plt-cache-{{ checksum "./app/mix.lock" }}
-            - v1-plt-cache
+            - $CACHE_VERSION-plt-cache-{{ checksum "./app/mix.lock" }}
+            - $CACHE_VERSION-plt-cache
       - run:
           name: Install Dockerize if not found in cache
           command:
@@ -57,31 +58,31 @@ jobs:  # basic units of work in a run
           name: Install dependencies and compile them
           command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
       - save_cache:  # generate and store mix cache
-          key: v1-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
+          key: $CACHE_VERSION-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
           paths: "./app/deps"
       - save_cache:  # make another, less specific cache
-          key: v1-mix-cache-{{ .Branch }}
+          key: $CACHE_VERSION-mix-cache-{{ .Branch }}
           paths: "./app/deps"
       - save_cache:  # you should really save one more cache (just in case)
-          key: v1-mix-cache
+          key: $CACHE_VERSION-mix-cache
           paths: "./app/deps"
       - save_cache: # don't forget to save a *build* cache, too
-          key: v1-build-cache-{{ .Branch }}
+          key: $CACHE_VERSION-build-cache-{{ .Branch }}
           paths: "./app/_build"
       - save_cache: # and one more build cache for good measure
-          key: v1-build-cache
+          key: $CACHE_VERSION-build-cache
           paths: "./app/_build"
       - save_cache:
-          key: dockerize-{{ arch }}-v$DOCKERIZE_VERSION
+          key: dockerize-{{ arch }}-$DOCKERIZE_VERSION
           paths:
             - /usr/local/bin/dockerize
       - save_cache:
-          key: v1-plt-cache-{{ checksum "./app/mix.lock" }}
+          key: $CACHE_VERSION-plt-cache-{{ checksum "./app/mix.lock" }}
           paths:
             - ./app/_build
             - ~/.mix
       - save_cache:
-          key: v1-plt-cache
+          key: $CACHE_VERSION-plt-cache
           paths:
             - ./app/_build
             - ~/.mix
@@ -95,8 +96,8 @@ jobs:  # basic units of work in a run
           name: Waiting for Postgres to be ready
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run: 
-          name: Run tests
-          command: cd app && mkdir cover && mix coveralls.html # run all tests in project
+          name: Run tests and generate coverage
+          command: cd app && mkdir cover && mix test --cover && mix coveralls.html # run all tests in project
 
       - store_test_results:  # upload junit test results for display in Test Summary
           # Read more: https://circleci.com/docs/2.0/collect-test-data/
