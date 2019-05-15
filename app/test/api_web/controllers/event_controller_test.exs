@@ -42,7 +42,7 @@ defmodule ApiWeb.EventControllerTest do
       assert %{
                "id" => id,
                "date" => "2010-04-17",
-               "description" => "some description",
+               "description" => "some description wrong",
                "title" => "some title"
              } = json_response(conn, 200)["data"]
     end
