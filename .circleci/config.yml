@@ -38,6 +38,9 @@ jobs:  # basic units of work in a run
             - v2-build-cache-{{ .Branch }}
             - v2-build-cache
       - restore_cache:
+          key: v2-plt-cache-plt-{{ .Branch }}
+          key: v2-plt-cache-plt
+      - restore_cache:
           key: dockerize-{{ arch }}-{{ .Environment.DOCKERIZE_VERSION }}
       - run:
           name: Install Dockerize if not found in cache
@@ -67,15 +70,18 @@ jobs:  # basic units of work in a run
           key: v2-build-cache
           paths: "./app/_build"
       - save_cache:
+          key: v2-plt-cache-plt-{{ .Branch }}
+          paths: "./app/priv/plts"
+      - save_cache:
+          key: v2-plt-cache-plt
+          paths: "./app/priv/plts"
+      - save_cache:
           key: dockerize-{{ arch }}
           paths:
             - /usr/local/bin/dockerize
       - run:  # special utility that stalls main process until DB is ready
           name: Run Credo
           command: cd app && mix credo
-      - run: 
-          name: Run Dialyzer PLT generation
-          command: cd app && mix dialyzer --plt
       - run: 
           name: Run Dialyzer
           command: cd app && mix dialyzer
