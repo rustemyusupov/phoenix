@@ -19,7 +19,7 @@ jobs:  # basic units of work in a run
           POSTGRES_PASSWORD:
     environment:
       DOCKERIZE_VERSION: v0.6.1
-    working_directory: ~/app  # directory where steps will run
+    working_directory: ./app  # directory where steps will run
 
     steps:  # commands that comprise the `build` job
       - checkout  # check out source code to working directory
@@ -30,7 +30,7 @@ jobs:  # basic units of work in a run
       - restore_cache:  # restores saved mix cache
       # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
           keys:  # list of cache keys, in decreasing specificity
-            - v4-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
+            - v4-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
             - v4-mix-cache-{{ .Branch }}
             - v4-mix-cache
       - restore_cache:  # restores saved build cache
@@ -64,27 +64,27 @@ jobs:  # basic units of work in a run
           name: Run tests and generate coverage
           command: cd app && mkdir cover && mix test && mix coveralls.html # run all tests in project and generate coverage
       - save_cache:  # generate and store mix cache
-          key: v4-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
-          paths: "./app/deps"
+          key: v4-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
+          paths: "deps"
       - save_cache:  # make another, less specific cache
           key: v4-mix-cache-{{ .Branch }}
-          paths: "./app/deps"
+          paths: "deps"
       - save_cache:  # you should really save one more cache (just in case)
           key: v4-mix-cache
-          paths: "./app/deps"
+          paths: "deps"
       - save_cache: # don't forget to save a *build* cache, too
           key: v4-build-cache-{{ .Branch }}
-          paths: "./app/_build"
+          paths: "_build"
       - save_cache: # and one more build cache for good measure
           key: v4-build-cache
-          paths: "./app/_build"
+          paths: "_build"
       - save_cache:
           key: dockerize-{{ arch }}
           paths:
             - /usr/local/bin/dockerize
       - store_test_results:  # upload junit test results for display in Test Summary
           # Read more: https://circleci.com/docs/2.0/collect-test-data/
-          path: ./app/cover # Replace with the name of your :app
+          path: cover # Replace with the name of your :app
 
       - store_artifacts:
-          path: ./app/cover
+          path: cover
