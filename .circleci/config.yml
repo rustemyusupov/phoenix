@@ -53,6 +53,18 @@ jobs:  # basic units of work in a run
       - run: 
           name: Install dependencies and compile them
           command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
+      - run:  # special utility that stalls main process until DB is ready
+          name: Run Credo
+          command: cd app && mix credo
+      - run: 
+          name: Run Dialyzer
+          command: cd app && mix dialyzer
+      - run:  # special utility that stalls main process until DB is ready
+          name: Waiting for Postgres to be ready
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+      - run: 
+          name: Run tests and generate coverage
+          command: cd app && mkdir cover && mix test && mix coveralls.html # run all tests in project and generate coverage
       - save_cache:  # generate and store mix cache
           key: v2-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
           paths: "./app/deps"
@@ -75,19 +87,6 @@ jobs:  # basic units of work in a run
           key: dockerize-{{ arch }}
           paths:
             - /usr/local/bin/dockerize
-      - run:  # special utility that stalls main process until DB is ready
-          name: Run Credo
-          command: cd app && mix credo
-      - run: 
-          name: Run Dialyzer
-          command: cd app && mix dialyzer
-      - run:  # special utility that stalls main process until DB is ready
-          name: Waiting for Postgres to be ready
-          command: dockerize -wait tcp://localhost:5432 -timeout 1m
-      - run: 
-          name: Run tests and generate coverage
-          command: cd app && mkdir cover && mix test && mix coveralls.html # run all tests in project and generate coverage
-
       - store_test_results:  # upload junit test results for display in Test Summary
           # Read more: https://circleci.com/docs/2.0/collect-test-data/
           path: ./app/cover # Replace with the name of your :app
