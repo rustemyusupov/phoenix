@@ -96,7 +96,7 @@ jobs:  # basic units of work in a run
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run: 
           name: Run tests
-          command: cd app && mkdir cover && mix coveralls.circle # run all tests in project
+          command: cd app && mkdir cover && mix coveralls.html # run all tests in project
 
       - store_test_results:  # upload junit test results for display in Test Summary
           # Read more: https://circleci.com/docs/2.0/collect-test-data/
