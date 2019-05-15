@@ -32,19 +32,19 @@ jobs:  # basic units of work in a run
       - restore_cache:  # restores saved mix cache
       # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
           keys:  # list of cache keys, in decreasing specificity
-            - $CACHE_VERSION-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
-            - $CACHE_VERSION-mix-cache-{{ .Branch }}
-            - $CACHE_VERSION-mix-cache
+            - {{ .Environment.CACHE_VERSION }}-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
+            - {{ .Environment.CACHE_VERSION }}-mix-cache-{{ .Branch }}
+            - {{ .Environment.CACHE_VERSION }}-mix-cache
       - restore_cache:  # restores saved build cache
           keys:
-            - $CACHE_VERSION-build-cache-{{ .Branch }}
-            - $CACHE_VERSION-build-cache
+            - {{ .Environment.CACHE_VERSION }}-build-cache-{{ .Branch }}
+            - {{ .Environment.CACHE_VERSION }}-build-cache
       - restore_cache:
-          key: dockerize-{{ arch }}-$DOCKERIZE_VERSION
+          key: dockerize-{{ arch }}-{{ .Environment.DOCKERIZE_VERSION }}
       - restore_cache:
           keys:
-            - $CACHE_VERSION-plt-cache-{{ checksum "./app/mix.lock" }}
-            - $CACHE_VERSION-plt-cache
+            - {{ .Environment.CACHE_VERSION }}-plt-cache-{{ checksum "./app/mix.lock" }}
+            - {{ .Environment.CACHE_VERSION }}-plt-cache
       - run:
           name: Install Dockerize if not found in cache
           command:
@@ -58,31 +58,31 @@ jobs:  # basic units of work in a run
           name: Install dependencies and compile them
           command: cd app && mix do deps.get, compile  # get updated dependencies & compile them
       - save_cache:  # generate and store mix cache
-          key: $CACHE_VERSION-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
+          key: {{ .Environment.CACHE_VERSION }}-mix-cache-{{ .Branch }}-{{ checksum "./app/mix.lock" }}
           paths: "./app/deps"
       - save_cache:  # make another, less specific cache
-          key: $CACHE_VERSION-mix-cache-{{ .Branch }}
+          key: {{ .Environment.CACHE_VERSION }}-mix-cache-{{ .Branch }}
           paths: "./app/deps"
       - save_cache:  # you should really save one more cache (just in case)
-          key: $CACHE_VERSION-mix-cache
+          key: {{ .Environment.CACHE_VERSION }}-mix-cache
           paths: "./app/deps"
       - save_cache: # don't forget to save a *build* cache, too
-          key: $CACHE_VERSION-build-cache-{{ .Branch }}
+          key: {{ .Environment.CACHE_VERSION }}-build-cache-{{ .Branch }}
           paths: "./app/_build"
       - save_cache: # and one more build cache for good measure
-          key: $CACHE_VERSION-build-cache
+          key: {{ .Environment.CACHE_VERSION }}-build-cache
           paths: "./app/_build"
       - save_cache:
-          key: dockerize-{{ arch }}-$DOCKERIZE_VERSION
+          key: dockerize-{{ arch }}-{{ .Environment.DOCKERIZE_VERSION }}
           paths:
             - /usr/local/bin/dockerize
       - save_cache:
-          key: $CACHE_VERSION-plt-cache-{{ checksum "./app/mix.lock" }}
+          key: {{ .Environment.CACHE_VERSION }}-plt-cache-{{ checksum "./app/mix.lock" }}
           paths:
             - ./app/_build
             - ~/.mix
       - save_cache:
-          key: $CACHE_VERSION-plt-cache
+          key: {{ .Environment.CACHE_VERSION }}-plt-cache
           paths:
             - ./app/_build
             - ~/.mix
