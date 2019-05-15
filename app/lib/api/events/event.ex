@@ -1,6 +1,6 @@
 defmodule Api.Events.Event do
   @moduledoc """
-  The Events Schema for events.
+  The Events Schema.
   """
   use Ecto.Schema
   import Ecto.Changeset
