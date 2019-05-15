@@ -39,10 +39,6 @@ jobs:  # basic units of work in a run
             - v2-build-cache
       - restore_cache:
           key: dockerize-{{ arch }}-{{ .Environment.DOCKERIZE_VERSION }}
-      - restore_cache:
-          keys:
-            - v2-plt-cache-{{ checksum "./app/mix.lock" }}
-            - v2-plt-cache
       - run:
           name: Install Dockerize if not found in cache
           command:
@@ -74,16 +70,6 @@ jobs:  # basic units of work in a run
           key: dockerize-{{ arch }}
           paths:
             - /usr/local/bin/dockerize
-      - save_cache:
-          key: v2-plt-cache-{{ checksum "./app/mix.lock" }}
-          paths:
-            - ./app/_build
-            - ~/.mix
-      - save_cache:
-          key: v2-plt-cache
-          paths:
-            - ./app/_build
-            - ~/.mix
       - run:  # special utility that stalls main process until DB is ready
           name: Run Credo
           command: cd app && mix credo
